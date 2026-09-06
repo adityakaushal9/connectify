@@ -14,11 +14,16 @@ function buildIceServers() {
   try {
     if (import.meta.env.VITE_ICE_SERVERS) return JSON.parse(import.meta.env.VITE_ICE_SERVERS);
   } catch { /* fall through to defaults */ }
-  const turn = import.meta.env.VITE_TURN_URL;
-  if (turn) {
-    return [...DEFAULT_ICE, { urls: turn, username: import.meta.env.VITE_TURN_USER || '', credential: import.meta.env.VITE_TURN_PASS || '' }];
+  // Only attach TURN when URL + credentials are ALL present — a credential-less
+  // entry just produces confusing 400 allocate errors; STUN-only is a clearer signal.
+  const turnUrl = import.meta.env.VITE_TURN_URL;
+  const turnUser = import.meta.env.VITE_TURN_USER;
+  const turnPass = import.meta.env.VITE_TURN_PASS;
+  const servers = [...DEFAULT_ICE];
+  if (turnUrl && turnUser && turnPass) {
+    servers.push({ urls: turnUrl, username: turnUser, credential: turnPass });
   }
-  return DEFAULT_ICE;
+  return servers;
 }
 
 export function WebRTCProvider({ children }) {
@@ -72,9 +77,13 @@ export function WebRTCProvider({ children }) {
       const [stream] = e.streams;
       setPeers((p) => ({ ...p, [remoteSocketId]: { stream, userName: remoteName || 'Guest' } }));
     };
-    // Trickle our ICE candidates to that one peer via signaling server
+    // Trickle our ICE candidates to that one peer via signaling server.
+    // Log type: host = LAN, srflx = STUN public IP, relay = TURN (what you want on strict NATs)
     pc.onicecandidate = (e) => {
-      if (e.candidate) socketRef.current?.emit('ice-candidate', { targetSocketId: remoteSocketId, candidate: e.candidate, from: socketRef.current.id });
+      if (e.candidate) {
+        console.log(`[ICE] ${e.candidate.type} via ${e.candidate.protocol}`, e.candidate.address || '');
+        socketRef.current?.emit('ice-candidate', { targetSocketId: remoteSocketId, candidate: e.candidate, from: socketRef.current.id });
+      }
     };
     // Auto ICE-restart on failure (common on WiFi switch / sleep)
     pc.oniceconnectionstatechange = () => {
