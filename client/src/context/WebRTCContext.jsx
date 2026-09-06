@@ -12,19 +12,28 @@ const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
 
 function buildIceServers() {
   try {
-    if (import.meta.env.VITE_ICE_SERVERS) return JSON.parse(import.meta.env.VITE_ICE_SERVERS);
-  } catch { /* fall through to defaults */ }
-  // Only attach TURN when URL + credentials are ALL present — a credential-less
-  // entry just produces confusing 400 allocate errors; STUN-only is a clearer signal.
+    if (import.meta.env.VITE_ICE_SERVERS) {
+      return JSON.parse(import.meta.env.VITE_ICE_SERVERS);
+    }
+  } catch {
+    // fall through to defaults
+  }
+
   const turnUrl = import.meta.env.VITE_TURN_URL;
   const turnUser = import.meta.env.VITE_TURN_USER;
   const turnPass = import.meta.env.VITE_TURN_PASS;
-  const servers = [...DEFAULT_ICE];
+
+  const servers = [{ urls: 'stun:stun.l.google.com:19302' }];
   if (turnUrl && turnUser && turnPass) {
-    servers.push({ urls: turnUrl, username: turnUser, credential: turnPass });
+    servers.push({
+      urls: turnUrl,
+      username: turnUser,
+      credential: turnPass,
+    });
   }
   return servers;
 }
+
 
 export function WebRTCProvider({ children }) {
   const [localStream, setLocalStream] = useState(null);
