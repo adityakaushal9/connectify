@@ -1,7 +1,7 @@
 // Dashboard: start instant call or join by Room ID, copy invite link.
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Video, LogIn, Copy, Check, LogOut } from 'lucide-react';
+import { Video, LogIn, Copy, Check, LogOut, Radio } from 'lucide-react';
 
 const rid = () => Math.random().toString(36).slice(2, 8); // short shareable id
 
@@ -57,6 +57,12 @@ export default function Dashboard({ user, onLogout }) {
 
       <button onClick={onLogout} className="flex items-center gap-2 text-sm text-zinc-500 hover:text-white">
         <LogOut size={16} /> Sign out
+      </button>
+
+      {/* SFU path: server-relayed, works on strict mobile NATs where mesh P2P fails */}
+      <button onClick={() => nav(`/live/${rid()}`)}
+        className="flex items-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-5 py-2.5 text-sm font-medium text-indigo-300 hover:bg-indigo-500/20">
+        <Radio size={16} /> Try SFU call (works on mobile data)
       </button>
     </div>
   );

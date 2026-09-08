@@ -17,6 +17,8 @@
 - `server/routes|controllers|models|middleware` — JWT in httpOnly cookie (`token`, `SameSite=lax`, `Secure` in prod) + Bearer fallback; `POST /api/auth/logout` clears it. Sockets are intentionally unauthenticated (shareable links).
 - `client/src/context/WebRTCContext.jsx` — owns socket + all `RTCPeerConnection`s; ICE `stun:stun.l.google.com:19302`, TURN via `VITE_TURN_URL`/`VITE_ICE_SERVERS`; handles `room-full` with redirect.
 - `client/src/pages/Room.jsx` composes `VideoCall` + `Controls` + `ChatSidebar`; `App.jsx` guards routes via `/api/auth/me` cookie session (`credentials:include`), profile cached in localStorage.
+- SFU path: `LiveRoom.jsx` (`/live/:roomId`) uses `livekit-client` (adaptiveStream+dynacast); tokens from `POST /api/livekit/token` (auth-guarded, identity=DB user id, 2h TTL, `livekit-server-sdk`); SFU URL comes from token response — no client LiveKit env. Needs server `LIVEKIT_URL/KEY/SECRET`.
+- Mesh vs SFU: mesh = P2P, capped 6, needs TURN on strict NATs; SFU = server-relayed, no cap, no TURN. `VITE_ICE_SERVERS` and `VITE_TURN_*` are mutually exclusive (early-return skips TURN).
 
 ## Gotchas
 - Screen share uses `replaceTrack()` with `track.onended` auto-revert — don't renegotiate on share toggle.
