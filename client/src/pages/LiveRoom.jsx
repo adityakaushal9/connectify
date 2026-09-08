@@ -27,18 +27,26 @@ function Tile({ participant, isLocal }) {
     );
   };
 
-  // Attach on mount + on every track event; detach on unmount
+  // Attach on mount (tracks already published) AND on late subscribe.
+  // Mount-only attach misses tracks published after the tile exists — exactly the
+  // "joiner sees me, I don't see joiner" asymmetry.
   useEffect(() => {
     const pub = pickVideo();
     if (pub && vRef.current) pub.track.attach(vRef.current);
     participant.audioTrackPublications.forEach((p) => p.track && aRef.current && p.track.attach(aRef.current));
-    participant.on('trackSubscribed', refresh);
-    participant.on('trackUnsubscribed', refresh);
+    const onSub = (track) => {
+      if (track.kind === Track.Kind.Video && vRef.current) track.attach(vRef.current);
+      if (track.kind === Track.Kind.Audio && aRef.current) track.attach(aRef.current);
+      refresh();
+    };
+    const onUnsub = (track) => { track.detach(); refresh(); };
+    participant.on('trackSubscribed', onSub);
+    participant.on('trackUnsubscribed', onUnsub);
     participant.on('trackMuted', refresh);
     participant.on('trackUnmuted', refresh);
     return () => {
-      participant.off('trackSubscribed', refresh);
-      participant.off('trackUnsubscribed', refresh);
+      participant.off('trackSubscribed', onSub);
+      participant.off('trackUnsubscribed', onUnsub);
       participant.off('trackMuted', refresh);
       participant.off('trackUnmuted', refresh);
       participant.trackPublications.forEach((p) => p.track?.detach());
