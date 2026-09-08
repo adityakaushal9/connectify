@@ -26,6 +26,7 @@ const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 50, standardHeade
 // REST routes
 app.use('/api/auth', authLimiter, require('./routes/auth'));
 app.use('/api/rooms', require('./routes/rooms'));
+app.use('/api/livekit', require('./routes/livekit')); // SFU token minting (mesh needs no server rooms)
 app.get('/health', (_, res) => res.json({ ok: true }));
 
 // Attach Socket.IO to same server (required for WebRTC signaling + chat)

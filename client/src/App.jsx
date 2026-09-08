@@ -5,6 +5,7 @@ import { WebRTCProvider } from './context/WebRTCContext';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 import Room from './pages/Room';
+import LiveRoom from './pages/LiveRoom';
 
 const API = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
 const savedUser = () => { try { return JSON.parse(localStorage.getItem('user')); } catch { return null; } };
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/login" element={user ? <Navigate to="/" /> : <Auth onAuth={setUser} />} />
             <Route path="/" element={user ? <Dashboard user={user} onLogout={logout} /> : <Navigate to="/login" />} />
             <Route path="/room/:roomId" element={user ? <Room user={user} /> : <Navigate to="/login" />} />
+            <Route path="/live/:roomId" element={user ? <LiveRoom user={user} /> : <Navigate to="/login" />} />
           </Routes>
         </BrowserRouter>
       </WebRTCProvider>
