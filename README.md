@@ -4,9 +4,7 @@ Full-stack MERN video calling app with shareable rooms, live chat, and screen sh
 
 ![Stack](https://img.shields.io/badge/MERN-FullStack-green) ![WebRTC](https://img.shields.io/badge/WebRTC-Mesh-blue) ![Socket.IO](https://img.shields.io/badge/Socket.IO-Signaling-black) ![Tailwind](https://img.shields.io/badge/Tailwind-CSS-38bdf8)
 
-Live Demo: _add your Render/Vercel URLs here_
-- Client: `https://your-client.onrender.com`
-- API: `https://your-api.onrender.com`
+Live Demo: https://connectify-frontend-6jpa.onrender.com
 
 ## Features
 
